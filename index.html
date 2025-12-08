@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CarnalShoot - A fast-paced Doom-like FPS game">
+  <title>CarnalShoot</title>
+  <link rel="stylesheet" href="/src/index.css">
+</head>
+<body>
+  <div id="game-container">
+    <!-- Three.js canvas will be inserted here -->
+    <canvas id="game-canvas"></canvas>
+    
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+      <div class="loading-content">
+        <h1 class="loading-title">CARNALSHOOT</h1>
+        <div class="loading-bar">
+          <div class="loading-progress"></div>
+        </div>
+        <p class="loading-text">Loading...</p>
+      </div>
+    </div>
+    
+    <!-- Main Menu -->
+    <div id="main-menu" class="menu hidden">
+      <div class="menu-background"></div>
+      <div class="menu-content">
+        <h1 class="game-title">
+          <span class="title-carnal">CARNAL</span><span class="title-shoot">SHOOT</span>
+        </h1>
+        <nav class="menu-options">
+          <button class="menu-btn" data-action="start">START GAME</button>
+          <button class="menu-btn" data-action="maps">MAP SELECTION</button>
+          <button class="menu-btn" data-action="howto">HOW TO PLAY</button>
+          <button class="menu-btn" data-action="quit">QUIT TO DESKTOP</button>
+        </nav>
+      </div>
+    </div>
+    
+    <!-- Map Selection -->
+    <div id="map-select" class="menu hidden">
+      <div class="menu-background"></div>
+      <div class="menu-content">
+        <h2 class="menu-header">SELECT MAP</h2>
+        <div class="map-grid">
+          <div class="map-card" data-map="1">
+            <div class="map-preview map-1"></div>
+            <div class="map-info">
+              <h3>MAP 01</h3>
+              <span class="difficulty easy">EASY</span>
+              <p>Open arenas, simple navigation</p>
+            </div>
+          </div>
+          <div class="map-card" data-map="2">
+            <div class="map-preview map-2"></div>
+            <div class="map-info">
+              <h3>MAP 02</h3>
+              <span class="difficulty medium">MEDIUM</span>
+              <p>Industrial, multi-level paths</p>
+            </div>
+          </div>
+          <div class="map-card" data-map="3">
+            <div class="map-preview map-3"></div>
+            <div class="map-info">
+              <h3>MAP 03</h3>
+              <span class="difficulty hard">HARD</span>
+              <p>Hellish caverns, complex routes</p>
+            </div>
+          </div>
+        </div>
+        <button class="menu-btn back-btn" data-action="back">BACK</button>
+      </div>
+    </div>
+    
+    <!-- How To Play -->
+    <div id="how-to-play" class="menu hidden">
+      <div class="menu-background"></div>
+      <div class="menu-content howto-content">
+        <h2 class="menu-header">HOW TO PLAY</h2>
+        
+        <div class="howto-section">
+          <h3>CONTROLS</h3>
+          <div class="controls-grid">
+            <div class="control-item"><span class="key">W A S D</span> Move</div>
+            <div class="control-item"><span class="key">MOUSE</span> Look</div>
+            <div class="control-item"><span class="key">SPACE</span> Jump</div>
+            <div class="control-item"><span class="key">SHIFT</span> Sprint</div>
+            <div class="control-item"><span class="key">LMB</span> Fire</div>
+            <div class="control-item"><span class="key">1-6</span> Weapons</div>
+            <div class="control-item"><span class="key">R</span> Reload</div>
+            <div class="control-item"><span class="key">ESC</span> Pause</div>
+          </div>
+        </div>
+        
+        <div class="howto-section">
+          <h3>WEAPONS</h3>
+          <div class="weapons-list">
+            <div class="weapon-item"><span class="weapon-key">1</span> Knife - Melee swipe</div>
+            <div class="weapon-item"><span class="weapon-key">2</span> Pistol - Semi-auto</div>
+            <div class="weapon-item"><span class="weapon-key">3</span> SMG - Full-auto spray</div>
+            <div class="weapon-item"><span class="weapon-key">4</span> Shotgun - Pump action</div>
+            <div class="weapon-item"><span class="weapon-key">5</span> AR15 - Accurate rifle</div>
+            <div class="weapon-item"><span class="weapon-key">6</span> Minigun - Spin-up beast</div>
+          </div>
+        </div>
+        
+        <div class="howto-section">
+          <h3>ENEMIES</h3>
+          <div class="enemies-list">
+            <div class="enemy-item"><span class="enemy-icon minion"></span> Minion - Fast melee rusher</div>
+            <div class="enemy-item"><span class="enemy-icon tank"></span> Tank - Slow heavy hitter</div>
+            <div class="enemy-item"><span class="enemy-icon ranged"></span> Ranged - Projectile shooter</div>
+          </div>
+        </div>
+        
+        <div class="howto-section">
+          <h3>OBJECTIVE</h3>
+          <p>Survive all waves of enemies. Clear each wave to progress. Health regenerates between waves.</p>
+        </div>
+        
+        <button class="menu-btn back-btn" data-action="back">BACK</button>
+      </div>
+    </div>
+    
+    <!-- Pause Menu -->
+    <div id="pause-menu" class="menu hidden">
+      <div class="menu-background dark"></div>
+      <div class="menu-content">
+        <h2 class="menu-header">PAUSED</h2>
+        <nav class="menu-options">
+          <button class="menu-btn" data-action="resume">RESUME</button>
+          <button class="menu-btn" data-action="restart">RESTART</button>
+          <button class="menu-btn" data-action="howto">HOW TO PLAY</button>
+          <button class="menu-btn" data-action="mainmenu">QUIT TO MENU</button>
+        </nav>
+      </div>
+    </div>
+    
+    <!-- Game Over Screen -->
+    <div id="game-over" class="menu hidden">
+      <div class="menu-background dark"></div>
+      <div class="menu-content">
+        <h2 class="menu-header gameover-title">GAME OVER</h2>
+        <p class="gameover-stats">Wave <span id="final-wave">0</span> | Kills <span id="final-kills">0</span></p>
+        <nav class="menu-options">
+          <button class="menu-btn" data-action="restart">TRY AGAIN</button>
+          <button class="menu-btn" data-action="mainmenu">MAIN MENU</button>
+        </nav>
+      </div>
+    </div>
+    
+    <!-- Victory Screen -->
+    <div id="victory" class="menu hidden">
+      <div class="menu-background victory-bg"></div>
+      <div class="menu-content">
+        <h2 class="menu-header victory-title">VICTORY!</h2>
+        <p class="victory-stats">All waves cleared! | Kills <span id="victory-kills">0</span></p>
+        <nav class="menu-options">
+          <button class="menu-btn" data-action="nextmap">NEXT MAP</button>
+          <button class="menu-btn" data-action="mainmenu">MAIN MENU</button>
+        </nav>
+      </div>
+    </div>
+    
+    <!-- HUD -->
+    <div id="hud" class="hidden">
+      <div class="hud-left">
+        <div class="health-container">
+          <div class="health-icon"></div>
+          <div class="health-bar">
+            <div class="health-fill"></div>
+          </div>
+          <span class="health-text">100</span>
+        </div>
+      </div>
+      
+      <div class="hud-center">
+        <div class="crosshair"></div>
+        <div class="wave-indicator">
+          <span class="wave-text">WAVE <span id="current-wave">1</span></span>
+          <span class="enemies-left"><span id="enemies-count">0</span> ENEMIES</span>
+        </div>
+      </div>
+      
+      <div class="hud-right">
+        <div class="weapon-display">
+          <div class="weapon-icon" id="weapon-icon"></div>
+          <div class="ammo-container">
+            <span class="ammo-current" id="ammo-current">30</span>
+            <span class="ammo-divider">/</span>
+            <span class="ammo-reserve" id="ammo-reserve">90</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="hud-bottom">
+        <div class="weapon-slots">
+          <div class="weapon-slot" data-slot="1">1</div>
+          <div class="weapon-slot" data-slot="2">2</div>
+          <div class="weapon-slot" data-slot="3">3</div>
+          <div class="weapon-slot" data-slot="4">4</div>
+          <div class="weapon-slot" data-slot="5">5</div>
+          <div class="weapon-slot" data-slot="6">6</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Pointer Lock Prompt -->
+    <div id="pointer-prompt" class="hidden">
+      <p>Click to play</p>
+    </div>
+  </div>
+  
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

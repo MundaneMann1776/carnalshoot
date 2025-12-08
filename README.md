@@ -6,7 +6,7 @@ A fast-paced Doom-like first-person shooter built with Three.js.
 
 ## 🎮 Play Now
 
-**[Play CarnalShoot](https://yigit.github.io/carnalshoot/)**
+**[Play CarnalShoot](https://mundanemann1776.github.io/carnalshoot/)**
 
 ## Features
 

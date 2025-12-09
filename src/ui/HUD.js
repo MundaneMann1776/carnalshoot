@@ -11,8 +11,17 @@ export class HUD {
         this.waveText = document.getElementById('current-wave');
         this.enemiesCount = document.getElementById('enemies-count');
         this.ammoCurrent = document.getElementById('ammo-current');
+        this.ammoMag = document.getElementById('ammo-mag');
         this.ammoReserve = document.getElementById('ammo-reserve');
+        this.ammoReserveWrap = document.querySelector('.ammo-reserve-wrap');
         this.weaponSlots = document.querySelectorAll('.weapon-slot');
+
+        // Heat bar elements
+        this.heatContainer = document.getElementById('heat-container');
+        this.heatFill = document.getElementById('heat-fill');
+
+        // Flashlight indicator
+        this.flashlightStatus = document.getElementById('flashlight-status');
 
         // Damage overlay effect
         this.createDamageOverlay();
@@ -54,12 +63,20 @@ export class HUD {
             // Color based on health
             if (healthPercent > 60) {
                 this.healthFill.style.background = 'linear-gradient(135deg, #660000 0%, #aa0000 50%, #ff0000 100%)';
+                this.healthFill.style.animation = 'none';
             } else if (healthPercent > 30) {
                 this.healthFill.style.background = 'linear-gradient(135deg, #664400 0%, #aa6600 50%, #ff8800 100%)';
+                this.healthFill.style.animation = 'none';
             } else {
                 this.healthFill.style.background = 'linear-gradient(135deg, #440000 0%, #880000 50%, #cc0000 100%)';
                 // Pulse effect at low health
                 this.healthFill.style.animation = 'pulse 0.5s infinite';
+            }
+
+            // Update flashlight indicator
+            if (this.game.player.flashlight) {
+                this.flashlightStatus.textContent = this.game.player.flashlightOn ? 'ON' : 'OFF';
+                this.flashlightStatus.classList.toggle('on', this.game.player.flashlightOn);
             }
         }
 
@@ -69,16 +86,43 @@ export class HUD {
             this.enemiesCount.textContent = this.game.waveManager.enemiesRemaining;
         }
 
-        // Update ammo
+        // Update ammo and heat
         if (this.game.weaponManager) {
             const weapon = this.game.weaponManager.currentWeapon;
 
             if (weapon.name === 'Knife') {
                 this.ammoCurrent.textContent = '∞';
-                this.ammoReserve.textContent = '';
+                if (this.ammoMag) this.ammoMag.style.display = 'none';
+                if (this.ammoReserveWrap) this.ammoReserveWrap.style.display = 'none';
+                document.querySelector('.ammo-divider').style.display = 'none';
             } else {
+                // Format: current / magSize (reserve)
                 this.ammoCurrent.textContent = weapon.currentAmmo;
-                this.ammoReserve.textContent = weapon.reserveAmmo;
+                if (this.ammoMag) {
+                    this.ammoMag.textContent = weapon.magSize;
+                    this.ammoMag.style.display = 'inline';
+                }
+                if (this.ammoReserveWrap) {
+                    this.ammoReserve.textContent = weapon.reserveAmmo;
+                    this.ammoReserveWrap.style.display = 'inline';
+                }
+                document.querySelector('.ammo-divider').style.display = 'inline';
+            }
+
+            // Show/hide heat bar for minigun
+            if (weapon.name === 'Minigun') {
+                this.heatContainer.style.display = 'flex';
+                const heatPercent = weapon.getHeatPercent();
+                this.heatFill.style.width = heatPercent + '%';
+
+                // Add overheated class
+                if (weapon.isOverheated) {
+                    this.heatFill.classList.add('overheated');
+                } else {
+                    this.heatFill.classList.remove('overheated');
+                }
+            } else {
+                this.heatContainer.style.display = 'none';
             }
         }
     }

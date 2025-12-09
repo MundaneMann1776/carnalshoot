@@ -90,6 +90,7 @@
             <div class="control-item"><span class="key">LMB</span> Fire</div>
             <div class="control-item"><span class="key">1-6</span> Weapons</div>
             <div class="control-item"><span class="key">R</span> Reload</div>
+            <div class="control-item"><span class="key">F</span> Flashlight</div>
             <div class="control-item"><span class="key">ESC</span> Pause</div>
           </div>
         </div>
@@ -190,8 +191,19 @@
           <div class="ammo-container">
             <span class="ammo-current" id="ammo-current">30</span>
             <span class="ammo-divider">/</span>
-            <span class="ammo-reserve" id="ammo-reserve">90</span>
+            <span class="ammo-mag" id="ammo-mag">30</span>
+            <span class="ammo-reserve-wrap">(<span class="ammo-reserve" id="ammo-reserve">90</span>)</span>
           </div>
+          <div class="heat-container" id="heat-container" style="display: none;">
+            <span class="heat-label">HEAT</span>
+            <div class="heat-bar">
+              <div class="heat-fill" id="heat-fill"></div>
+            </div>
+          </div>
+        </div>
+        <div class="flashlight-indicator" id="flashlight-indicator">
+          <span class="flashlight-icon">🔦</span>
+          <span class="flashlight-status" id="flashlight-status">OFF</span>
         </div>
       </div>
       

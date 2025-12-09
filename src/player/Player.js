@@ -1,4 +1,4 @@
-// Player.js - First-person player controller
+// Player.js - First-person player controller with flashlight
 import * as THREE from 'three';
 
 export class Player {
@@ -34,9 +34,41 @@ export class Player {
         this.radius = 0.4;
         this.height = 1.7;
 
+        // Flashlight
+        this.flashlightOn = false;
+        this.flashlight = null;
+        this.flashlightTarget = null;
+        this.createFlashlight();
+
         // Set initial camera position
         this.camera.position.copy(this.position);
         this.camera.rotation.copy(this.rotation);
+    }
+
+    createFlashlight() {
+        // Create spotlight for flashlight
+        this.flashlight = new THREE.SpotLight(0xffffee, 0, 28, Math.PI / 8, 0.3, 1);
+        this.flashlight.castShadow = false; // Disable for performance
+        this.camera.add(this.flashlight);
+
+        // Position at camera
+        this.flashlight.position.set(0, 0, 0);
+
+        // Target in front of camera
+        this.flashlightTarget = new THREE.Object3D();
+        this.flashlightTarget.position.set(0, 0, -1);
+        this.camera.add(this.flashlightTarget);
+        this.flashlight.target = this.flashlightTarget;
+    }
+
+    toggleFlashlight() {
+        this.flashlightOn = !this.flashlightOn;
+        this.flashlight.intensity = this.flashlightOn ? 2.6 : 0;
+
+        // Play click sound
+        if (this.game.audioManager) {
+            this.game.audioManager.playTone(this.flashlightOn ? 800 : 600, 0.05, 0.2);
+        }
     }
 
     update(deltaTime) {
@@ -215,7 +247,10 @@ export class Player {
         // Play hurt sound
         this.game.audioManager.playSound('player_hurt');
 
-        // Screen shake effect could go here
+        // Show damage effect
+        if (this.game.hud) {
+            this.game.hud.showDamageEffect();
+        }
 
         return this.health <= 0;
     }

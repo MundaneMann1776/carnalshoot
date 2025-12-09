@@ -102,12 +102,12 @@ export class Map02 extends Map {
     }
 
     createLighting() {
-        // Dim ambient - industrial feel
-        const ambient = new THREE.AmbientLight(0x444455, 0.3);
+        // Raised ambient for better visibility
+        const ambient = new THREE.AmbientLight(0x606080, 0.5);
         this.scene.add(ambient);
         this.lights.push(ambient);
 
-        // Harsh overhead lights
+        // Main overhead lights (5 original)
         const lightPositions = [
             { x: -15, z: -15 }, { x: 15, z: -15 },
             { x: -15, z: 15 }, { x: 15, z: 15 },
@@ -115,7 +115,7 @@ export class Map02 extends Map {
         ];
 
         for (const pos of lightPositions) {
-            const light = new THREE.PointLight(0xffeecc, 0.8, 25);
+            const light = new THREE.PointLight(0xffeecc, 1.0, 30);
             light.position.set(pos.x, 6, pos.z);
             light.castShadow = true;
             this.scene.add(light);
@@ -146,9 +146,26 @@ export class Map02 extends Map {
             this.meshes.push(glow);
         }
 
-        // Dark industrial sky
-        this.scene.background = new THREE.Color(0x1a1a2e);
-        this.scene.fog = new THREE.Fog(0x1a1a2e, 15, 50);
+        // Additional 14 fill lights for better visibility
+        const fillLightPositions = [
+            { x: -25, z: -25 }, { x: 0, z: -25 }, { x: 25, z: -25 },
+            { x: -25, z: 0 }, { x: 25, z: 0 },
+            { x: -25, z: 25 }, { x: 0, z: 25 }, { x: 25, z: 25 },
+            { x: -10, z: -10 }, { x: 10, z: -10 },
+            { x: -10, z: 10 }, { x: 10, z: 10 },
+            { x: 0, z: -15 }, { x: 0, z: 15 }
+        ];
+
+        for (const pos of fillLightPositions) {
+            const fillLight = new THREE.PointLight(0xaabbcc, 0.4, 18);
+            fillLight.position.set(pos.x, 4, pos.z);
+            this.scene.add(fillLight);
+            this.lights.push(fillLight);
+        }
+
+        // Lighter industrial sky
+        this.scene.background = new THREE.Color(0x252540);
+        this.scene.fog = new THREE.Fog(0x252540, 25, 65);
     }
 
     createDecorations() {

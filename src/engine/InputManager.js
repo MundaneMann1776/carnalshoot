@@ -190,6 +190,13 @@ export class InputManager {
                 this.game.weaponManager?.switchWeapon(5);
                 break;
 
+            // Flashlight toggle
+            case 'KeyF':
+                if (this.game.player) {
+                    this.game.player.toggleFlashlight();
+                }
+                break;
+
             // Pause
             case 'Escape':
                 this.game.pauseGame();

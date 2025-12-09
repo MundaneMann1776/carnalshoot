@@ -1,4 +1,4 @@
-// Ranged.js - Projectile-shooting enemy
+// Ranged.js - Projectile-shooting enemy with improved visuals
 import * as THREE from 'three';
 import { Enemy, EnemyState } from './Enemy.js';
 
@@ -17,76 +17,163 @@ export class Ranged extends Enemy {
 
         this.preferredDistance = 10;
         this.minDistance = 5;
+
+        // Animation
+        this.hoverPhase = Math.random() * Math.PI * 2;
+        this.chargePhase = 0;
     }
 
     createMesh() {
         const group = new THREE.Group();
 
-        // Hovering body (floating)
-        const bodyGeo = new THREE.OctahedronGeometry(0.35, 0);
+        // Main body - thin archer shape
+        const bodyGeo = new THREE.CylinderGeometry(0.15, 0.25, 0.8, 8);
         const bodyMat = new THREE.MeshStandardMaterial({
-            color: 0x6666aa,
-            roughness: 0.3,
-            metalness: 0.6
+            color: 0x6666aa, // Mutated skin tone
+            roughness: 0.6,
+            metalness: 0.3
         });
         const body = new THREE.Mesh(bodyGeo, bodyMat);
-        body.position.y = 1.2;
+        body.position.y = 1.0;
         group.add(body);
 
-        // Inner core (glowing)
-        const coreGeo = new THREE.SphereGeometry(0.15, 8, 8);
-        const coreMat = new THREE.MeshBasicMaterial({
-            color: 0xaaaaff,
+        // Crystalline horns
+        const hornMat = new THREE.MeshStandardMaterial({
+            color: 0xaa88ff,
+            roughness: 0.15,
+            metalness: 0.7,
+            transparent: true,
+            opacity: 0.9
+        });
+
+        const hornGeo = new THREE.ConeGeometry(0.06, 0.35, 6);
+
+        // Left horn (curved forward)
+        const leftHorn = new THREE.Mesh(hornGeo, hornMat);
+        leftHorn.position.set(-0.15, 1.6, -0.1);
+        leftHorn.rotation.x = -0.3;
+        leftHorn.rotation.z = 0.25;
+        group.add(leftHorn);
+
+        // Right horn
+        const rightHorn = new THREE.Mesh(hornGeo, hornMat);
+        rightHorn.position.set(0.15, 1.6, -0.1);
+        rightHorn.rotation.x = -0.3;
+        rightHorn.rotation.z = -0.25;
+        group.add(rightHorn);
+
+        // Center horn (taller)
+        const centerHorn = new THREE.Mesh(
+            new THREE.ConeGeometry(0.05, 0.45, 6),
+            hornMat
+        );
+        centerHorn.position.set(0, 1.65, 0);
+        group.add(centerHorn);
+
+        // Head
+        const headGeo = new THREE.SphereGeometry(0.18, 8, 8);
+        const headMat = new THREE.MeshStandardMaterial({
+            color: 0x7777bb,
+            roughness: 0.55,
+            metalness: 0.25
+        });
+        const head = new THREE.Mesh(headGeo, headMat);
+        head.position.y = 1.4;
+        head.scale.set(1, 1.2, 0.9);
+        group.add(head);
+
+        // Large single eye
+        const eyeGeo = new THREE.SphereGeometry(0.1, 12, 12);
+        const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff2200 });
+        const eye = new THREE.Mesh(eyeGeo, eyeMat);
+        eye.position.set(0, 1.45, -0.15);
+        group.add(eye);
+
+        // Eye glow
+        const eyeLight = new THREE.PointLight(0xff2200, 0.5, 2);
+        eyeLight.position.set(0, 1.45, -0.2);
+        group.add(eyeLight);
+
+        // Pupil (tracks player)
+        const pupilGeo = new THREE.SphereGeometry(0.035, 6, 6);
+        const pupilMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+        this.pupil = new THREE.Mesh(pupilGeo, pupilMat);
+        this.pupil.position.set(0, 1.45, -0.24);
+        group.add(this.pupil);
+
+        // Glowing projectile organ (on chest)
+        const organGeo = new THREE.SphereGeometry(0.12, 8, 8);
+        const organMat = new THREE.MeshBasicMaterial({
+            color: 0xff00ff,
             transparent: true,
             opacity: 0.8
         });
-        const core = new THREE.Mesh(coreGeo, coreMat);
-        core.position.y = 1.2;
-        group.add(core);
+        this.projectileOrgan = new THREE.Mesh(organGeo, organMat);
+        this.projectileOrgan.position.set(0, 0.9, -0.2);
+        group.add(this.projectileOrgan);
 
-        // Eye (single, large)
-        const eyeGeo = new THREE.SphereGeometry(0.12, 8, 8);
-        const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-        const eye = new THREE.Mesh(eyeGeo, eyeMat);
-        eye.position.set(0, 1.2, -0.3);
-        group.add(eye);
+        // Organ glow
+        this.organLight = new THREE.PointLight(0xff00ff, 0.4, 1.5);
+        this.organLight.position.set(0, 0.9, -0.25);
+        group.add(this.organLight);
 
-        // Pupil
-        const pupilGeo = new THREE.SphereGeometry(0.04, 6, 6);
-        const pupilMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
-        const pupil = new THREE.Mesh(pupilGeo, pupilMat);
-        pupil.position.set(0, 1.2, -0.4);
-        group.add(pupil);
-
-        // Floating rings
-        const ringGeo = new THREE.TorusGeometry(0.45, 0.02, 8, 16);
-        const ringMat = new THREE.MeshStandardMaterial({
-            color: 0x8888cc,
-            roughness: 0.2,
-            metalness: 0.8
+        // Thin arms (lowered, not attacking pose)
+        const armGeo = new THREE.CylinderGeometry(0.03, 0.025, 0.4, 6);
+        const armMat = new THREE.MeshStandardMaterial({
+            color: 0x6666aa,
+            roughness: 0.65
         });
 
-        const ring1 = new THREE.Mesh(ringGeo, ringMat);
-        ring1.position.y = 1.2;
-        ring1.rotation.x = Math.PI / 2;
-        group.add(ring1);
+        const leftArm = new THREE.Mesh(armGeo, armMat);
+        leftArm.position.set(-0.22, 0.9, 0);
+        leftArm.rotation.z = 0.15;
+        group.add(leftArm);
 
-        const ring2 = new THREE.Mesh(ringGeo, ringMat);
-        ring2.position.y = 1.2;
-        ring2.rotation.x = Math.PI / 3;
-        ring2.rotation.y = Math.PI / 4;
-        group.add(ring2);
+        const rightArm = new THREE.Mesh(armGeo, armMat);
+        rightArm.position.set(0.22, 0.9, 0);
+        rightArm.rotation.z = -0.15;
+        group.add(rightArm);
 
-        // Store refs for animation
-        this.ring1 = ring1;
-        this.ring2 = ring2;
-        this.coreMesh = core;
+        // Floating rings (energy)
+        const ringGeo = new THREE.TorusGeometry(0.35, 0.015, 8, 24);
+        const ringMat = new THREE.MeshStandardMaterial({
+            color: 0xaa88ff,
+            roughness: 0.15,
+            metalness: 0.85,
+            transparent: true,
+            opacity: 0.7
+        });
+
+        this.ring1 = new THREE.Mesh(ringGeo, ringMat);
+        this.ring1.position.y = 1.0;
+        this.ring1.rotation.x = Math.PI / 2;
+        group.add(this.ring1);
+
+        this.ring2 = new THREE.Mesh(ringGeo, ringMat);
+        this.ring2.position.y = 1.0;
+        this.ring2.rotation.x = Math.PI / 3;
+        this.ring2.rotation.y = Math.PI / 4;
+        group.add(this.ring2);
+
+        // Wispy lower body (fades out)
+        const wispGeo = new THREE.ConeGeometry(0.2, 0.5, 8);
+        const wispMat = new THREE.MeshStandardMaterial({
+            color: 0x5555aa,
+            roughness: 0.7,
+            metalness: 0.2,
+            transparent: true,
+            opacity: 0.6
+        });
+        const wisp = new THREE.Mesh(wispGeo, wispMat);
+        wisp.position.y = 0.35;
+        wisp.rotation.x = Math.PI;
+        group.add(wisp);
 
         // Store for hit detection
         group.userData.enemy = this;
 
         // Store materials
-        this.originalMaterials = [bodyMat, coreMat, ringMat];
+        this.originalMaterials = [bodyMat, headMat, armMat, hornMat];
 
         this.mesh = group;
         return group;
@@ -159,6 +246,16 @@ export class Ranged extends Enemy {
             return;
         }
 
+        // Charge up animation
+        if (!this.canAttack) {
+            this.chargePhase += deltaTime * 5;
+            if (this.projectileOrgan) {
+                const pulse = 1 + Math.sin(this.chargePhase) * 0.3;
+                this.projectileOrgan.scale.set(pulse, pulse, pulse);
+                this.organLight.intensity = 0.4 + Math.sin(this.chargePhase) * 0.3;
+            }
+        }
+
         // Attack if able
         if (this.canAttack) {
             this.performAttack();
@@ -169,10 +266,10 @@ export class Ranged extends Enemy {
         const player = this.game.player;
         if (!player) return;
 
-        // Create projectile
+        // Create projectile from organ
         const projectile = new EnemyProjectile(
             this.game,
-            this.position.clone().add(new THREE.Vector3(0, 1.2, 0)),
+            this.position.clone().add(new THREE.Vector3(0, 0.9, -0.2)),
             player.getPosition().add(new THREE.Vector3(0, 1, 0)),
             this.damage
         );
@@ -181,13 +278,16 @@ export class Ranged extends Enemy {
         // Set cooldown
         this.canAttack = false;
         this.attackTimer = this.attackCooldown;
+        this.chargePhase = 0;
 
-        // Visual feedback - flash core
-        if (this.coreMesh) {
-            this.coreMesh.material.color.setHex(0xffffff);
+        // Visual feedback - flash organ
+        if (this.projectileOrgan) {
+            this.projectileOrgan.material.color.setHex(0xffffff);
+            this.organLight.intensity = 1.5;
             setTimeout(() => {
-                if (this.coreMesh) {
-                    this.coreMesh.material.color.setHex(0xaaaaff);
+                if (this.projectileOrgan) {
+                    this.projectileOrgan.material.color.setHex(0xff00ff);
+                    this.organLight.intensity = 0.4;
                 }
             }, 100);
         }
@@ -206,7 +306,16 @@ export class Ranged extends Enemy {
 
         // Hover animation
         if (this.mesh && !this.isDead) {
-            this.mesh.position.y = Math.sin(Date.now() * 0.003) * 0.1;
+            this.hoverPhase += deltaTime * 3;
+            this.mesh.position.y = Math.sin(this.hoverPhase) * 0.12;
+        }
+
+        // Eye tracking
+        if (this.pupil && this.game.player && !this.isDead) {
+            const toPlayer = this.game.player.getPosition().clone().sub(this.position);
+            toPlayer.normalize();
+            this.pupil.position.x = toPlayer.x * 0.03;
+            this.pupil.position.y = 1.45 + toPlayer.y * 0.02;
         }
     }
 }
@@ -223,24 +332,42 @@ class EnemyProjectile {
         // Calculate direction
         this.direction = targetPos.clone().sub(startPos).normalize();
 
-        // Create mesh
-        const geometry = new THREE.SphereGeometry(0.15, 8, 8);
+        // Create mesh - glowing energy orb
+        const geometry = new THREE.SphereGeometry(0.12, 8, 8);
         const material = new THREE.MeshBasicMaterial({
-            color: 0xff00ff,
+            color: 0xff44ff,
             transparent: true,
-            opacity: 0.8
+            opacity: 0.9
         });
         this.mesh = new THREE.Mesh(geometry, material);
         this.mesh.position.copy(startPos);
 
-        // Trail
-        this.trailPositions = [];
+        // Outer glow
+        const glowGeo = new THREE.SphereGeometry(0.2, 8, 8);
+        const glowMat = new THREE.MeshBasicMaterial({
+            color: 0xff00ff,
+            transparent: true,
+            opacity: 0.4
+        });
+        const glow = new THREE.Mesh(glowGeo, glowMat);
+        this.mesh.add(glow);
+
+        // Light
+        const light = new THREE.PointLight(0xff00ff, 0.5, 3);
+        this.mesh.add(light);
+
+        // Trail positions
+        this.trailMeshes = [];
     }
 
     update(deltaTime) {
         // Move projectile
         const movement = this.direction.clone().multiplyScalar(this.speed * deltaTime);
         this.mesh.position.add(movement);
+
+        // Spin effect
+        this.mesh.rotation.y += deltaTime * 10;
+        this.mesh.rotation.x += deltaTime * 5;
 
         // Check player collision
         const player = this.game.player;

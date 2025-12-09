@@ -138,18 +138,18 @@ export class Map03 extends Map {
     }
 
     createLighting() {
-        // Very dim ambient - hellish red
-        const ambient = new THREE.AmbientLight(0x330000, 0.2);
+        // Raised ambient - still hellish but visible
+        const ambient = new THREE.AmbientLight(0x442222, 0.4);
         this.scene.add(ambient);
         this.lights.push(ambient);
 
         // Hellfire glow from below
-        const underLight = new THREE.DirectionalLight(0xff2200, 0.3);
+        const underLight = new THREE.DirectionalLight(0xff2200, 0.4);
         underLight.position.set(0, -10, 0);
         this.scene.add(underLight);
         this.lights.push(underLight);
 
-        // Scattered fire lights
+        // Main fire lights (5 original, increased intensity)
         const firePositions = [
             { x: -25, z: -25 }, { x: 25, z: -25 },
             { x: -25, z: 25 }, { x: 25, z: 25 },
@@ -157,7 +157,7 @@ export class Map03 extends Map {
         ];
 
         for (const pos of firePositions) {
-            const fireLight = new THREE.PointLight(0xff4400, 0.8, 20);
+            const fireLight = new THREE.PointLight(0xff4400, 1.2, 25);
             fireLight.position.set(pos.x, 3, pos.z);
             fireLight.castShadow = true;
             this.scene.add(fireLight);
@@ -167,9 +167,27 @@ export class Map03 extends Map {
             this.createFireVisual(pos.x, pos.z);
         }
 
-        // Blood red sky
-        this.scene.background = new THREE.Color(0x1a0505);
-        this.scene.fog = new THREE.Fog(0x1a0505, 10, 60);
+        // Additional 20 fill lights for better visibility
+        const fillLightPositions = [
+            { x: -30, z: -30 }, { x: -15, z: -30 }, { x: 0, z: -30 }, { x: 15, z: -30 }, { x: 30, z: -30 },
+            { x: -30, z: -15 }, { x: 30, z: -15 },
+            { x: -30, z: 0 }, { x: 30, z: 0 },
+            { x: -30, z: 15 }, { x: 30, z: 15 },
+            { x: -30, z: 30 }, { x: -15, z: 30 }, { x: 0, z: 30 }, { x: 15, z: 30 }, { x: 30, z: 30 },
+            { x: -15, z: 0 }, { x: 15, z: 0 },
+            { x: 0, z: -15 }, { x: 0, z: 15 }
+        ];
+
+        for (const pos of fillLightPositions) {
+            const fillLight = new THREE.PointLight(0xff6644, 0.35, 15);
+            fillLight.position.set(pos.x, 3, pos.z);
+            this.scene.add(fillLight);
+            this.lights.push(fillLight);
+        }
+
+        // Blood red sky (slightly brighter)
+        this.scene.background = new THREE.Color(0x200808);
+        this.scene.fog = new THREE.Fog(0x200808, 15, 70);
     }
 
     createFireVisual(x, z) {
